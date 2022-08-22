@@ -7,8 +7,8 @@ import Paper from '@material-ui/core/Paper';
 
 import { RoomsService } from 'api';
 import { ScrollToBottomOnChanges, ThreePaneLayout, UserDisplay, VirtualList, AuthGuard } from 'components';
-import { RoomsStateMessages, RoomsStateRooms, JoinedRooms, RoomsSelectors, RoomsTypes } from 'store';
-import { RouteEnum } from 'types';
+import { RootState, RoomsStateMessages, RoomsStateRooms, JoinedRooms, RoomsSelectors } from 'store';
+import { RouteEnum, Room as RoomT } from 'types';
 
 import OpenGames from './OpenGames';
 import Messages from './Messages';
@@ -16,8 +16,15 @@ import SayMessage from './SayMessage';
 
 import './Room.css';
 
+interface RoomProps {
+  messages: RoomsStateMessages;
+  rooms: RoomsStateRooms;
+  joined: RoomT[];
+}
+
+
 // @TODO (3)
-const Room = (props) => {
+const Room = (props: RoomProps) => {
   const { joined, rooms, messages } = props;
   const navigate = useNavigate();
   const params = useParams();
@@ -88,13 +95,7 @@ const Room = (props) => {
   );
 }
 
-interface RoomProps {
-  messages: RoomsStateMessages;
-  rooms: RoomsStateRooms;
-  joined: JoinedRooms;
-}
-
-const mapStateToProps = state => ({
+const mapStateToProps = (state: RootState) => ({
   messages: RoomsSelectors.getMessages(state),
   rooms: RoomsSelectors.getRooms(state),
   joined: RoomsSelectors.getJoinedRooms(state),
