@@ -24,7 +24,7 @@ module.exports = {
     "indent": ["error", 2, {"SwitchCase": 1}],
     "key-spacing": ["error", {"beforeColon": false, "afterColon": true}],
     "keyword-spacing": ["error"],
-    "linebreak-style": ["error", (process.platform === "win32" ? "windows" : "unix")],
+    "linebreak-style": "off",
     "max-len": ["error", {"code": 140}],
     "no-eq-null": ["off"],
     "no-func-assign": ["error"],
