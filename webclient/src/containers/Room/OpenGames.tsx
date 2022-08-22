@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 
@@ -13,29 +13,36 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 // import { RoomsService } from "AppShell/common/services";
 
-import { SortUtil, RoomsDispatch, RoomsSelectors } from 'store';
+import { SortUtil, RoomsDispatch, RoomsSelectors, RoomsStateSortGamesBy } from 'store';
 import { UserDisplay } from 'components';
+import { RootState } from 'store';
+import { Room, SortDirection } from 'types';
 
 import './OpenGames.css';
+
+interface OpenGamesProps {
+  room: Room;
+  sortBy: RoomsStateSortGamesBy;
+}
 
 // @TODO run interval to update timeSinceCreated
 class OpenGames extends Component<OpenGamesProps> {
   private headerCells = [
     {
       label: 'Age',
-      field: 'startTime'
+      field: 'startTime',
     },
     {
       label: 'Description',
-      field: 'description'
+      field: 'description',
     },
     {
       label: 'Creator',
-      field: 'creatorInfo.name'
+      field: 'creatorInfo.name',
     },
     {
       label: 'Type',
-      field: 'gameType'
+      field: 'gameType',
     },
     {
       label: 'Restrictions',
@@ -47,12 +54,15 @@ class OpenGames extends Component<OpenGamesProps> {
     },
     {
       label: 'Spectators',
-      field: 'spectatorsCount'
+      field: 'spectatorsCount',
     },
   ];
 
   handleSort(sortByField) {
-    const { room: { roomId }, sortBy } = this.props;
+    const {
+      room: { roomId },
+      sortBy,
+    } = this.props;
     const { field, order } = SortUtil.toggleSortBy(sortByField, sortBy);
     RoomsDispatch.sortGames(roomId, field, order);
   }
@@ -72,25 +82,28 @@ class OpenGames extends Component<OpenGamesProps> {
   render() {
     const { room, sortBy } = this.props;
 
-    const games = room.gameList.filter(game => (
-      this.isUnavailableGame(game) &&
-      this.isPasswordProtectedGame(game) &&
-      this.isBuddiesOnlyGame(game)
-    ));
+    const games = room.gameList.filter(
+      (game) =>
+        this.isUnavailableGame(game) &&
+        this.isPasswordProtectedGame(game) &&
+        this.isBuddiesOnlyGame(game)
+    );
 
     return (
       <div className="games">
         <Table size="small">
           <TableHead>
             <TableRow>
-              { _.map(this.headerCells, ({ label, field }) => {
+              {_.map(this.headerCells, ({ label, field }) => {
                 const active = field === sortBy.field;
-                const order = sortBy.order.toLowerCase();
-                const sortDirection = active ? order : false;
+                const order = sortBy.order === SortDirection.ASC ? 'asc' : 'desc';
+                const sortDirection = active ? order : undefined;
 
                 return (
                   <TableCell sortDirection={sortDirection} key={label}>
-                    {!field ? label : (
+                    {!field ? (
+                      label
+                    ) : (
                       <TableSortLabel
                         active={active}
                         direction={order}
@@ -105,25 +118,47 @@ class OpenGames extends Component<OpenGamesProps> {
             </TableRow>
           </TableHead>
           <TableBody>
-            { _.map(games, ({ description, gameId, gameType, creatorInfo, maxPlayers, playerCount, spectatorsCount, startTime }) => (
-              <TableRow key={gameId}>
-                <TableCell className="games-header__cell single-line-ellipsis">{startTime}</TableCell>
-                <TableCell className="games-header__cell">
-                  <Tooltip title={description} placement="bottom-start" enterDelay={500}>
-                    <div className="single-line-ellipsis">
-                      {description}
-                    </div>
-                  </Tooltip>
-                </TableCell>
-                <TableCell className="games-header__cell">
-                  <UserDisplay user={ creatorInfo } />
-                </TableCell>
-                <TableCell className="games-header__cell single-line-ellipsis">{gameType}</TableCell>
-                <TableCell className="games-header__cell single-line-ellipsis">?</TableCell>
-                <TableCell className="games-header__cell single-line-ellipsis">{`${playerCount}/${maxPlayers}`}</TableCell>
-                <TableCell className="games-header__cell single-line-ellipsis">{spectatorsCount}</TableCell>
-              </TableRow>
-            ))}
+            {_.map(
+              games,
+              ({
+                description,
+                gameId,
+                gameType,
+                creatorInfo,
+                maxPlayers,
+                playerCount,
+                spectatorsCount,
+                startTime,
+              }) => (
+                <TableRow key={gameId}>
+                  <TableCell className="games-header__cell single-line-ellipsis">
+                    {startTime}
+                  </TableCell>
+                  <TableCell className="games-header__cell">
+                    <Tooltip
+                      title={description}
+                      placement="bottom-start"
+                      enterDelay={500}
+                    >
+                      <div className="single-line-ellipsis">{description}</div>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell className="games-header__cell">
+                    <UserDisplay user={creatorInfo} />
+                  </TableCell>
+                  <TableCell className="games-header__cell single-line-ellipsis">
+                    {gameType}
+                  </TableCell>
+                  <TableCell className="games-header__cell single-line-ellipsis">
+                    ?
+                  </TableCell>
+                  <TableCell className="games-header__cell single-line-ellipsis">{`${playerCount}/${maxPlayers}`}</TableCell>
+                  <TableCell className="games-header__cell single-line-ellipsis">
+                    {spectatorsCount}
+                  </TableCell>
+                </TableRow>
+              )
+            )}
           </TableBody>
         </Table>
       </div>
@@ -131,13 +166,8 @@ class OpenGames extends Component<OpenGamesProps> {
   }
 }
 
-interface OpenGamesProps {
-  room: any;
-  sortBy: any;
-}
-
-const mapStateToProps = state => ({
-  sortBy: RoomsSelectors.getSortGamesBy(state)
+const mapStateToProps = (state: RootState) => ({
+  sortBy: RoomsSelectors.getSortGamesBy(state),
 });
 
 export default connect(mapStateToProps)(OpenGames);
